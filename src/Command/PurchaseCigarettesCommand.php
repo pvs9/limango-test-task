@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use App\Machine\CigaretteMachine;
+use App\Machine\SymfonyCigarettePurchaseTransaction;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
@@ -27,30 +29,37 @@ class PurchaseCigarettesCommand extends Command
      * @param InputInterface   $input
      * @param OutputInterface $output
      *
-     * @return int|null|void
+     * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $itemCount = (int) $input->getArgument('packs');
-        $amount = (float) \str_replace(',', '.', $input->getArgument('amount'));
+        $purchaseTransaction = new SymfonyCigarettePurchaseTransaction($input);
+        $cigaretteMachine = new CigaretteMachine();
+        $purchasedItem = $cigaretteMachine->execute($purchaseTransaction);
 
-
-        // $cigaretteMachine = new CigaretteMachine();
-        // ...
-
-        $output->writeln('You bought <info>...</info> packs of cigarettes for <info>...</info>, each for <info>...</info>. ');
+        $output->writeln(
+            sprintf(
+                'You bought <info>%s</info> packs of cigarettes for <info>%s</info>, each for <info>%s</info>.',
+                $purchasedItem->getItemQuantity(),
+                $purchasedItem->getTotalAmount(),
+                $cigaretteMachine->getItemPrice()
+            )
+        );
         $output->writeln('Your change is:');
+        $change = $purchasedItem->getChange();
+
+        $changeRows = array_map(
+            static fn ($coin, $count) => [$coin, $count],
+            array_keys($change),
+            $change
+        );
 
         $table = new Table($output);
         $table
             ->setHeaders(array('Coins', 'Count'))
-            ->setRows(array(
-                // ...
-                array('0.02', '0'),
-                array('0.01', '0'),
-            ))
-        ;
+            ->setRows($changeRows);
         $table->render();
 
+        return 0;
     }
 }

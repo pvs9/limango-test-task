@@ -2,11 +2,22 @@
   "type": "skilltest-junior",
   "license": "proprietary",
   "require": {
-    "symfony/console": "^3.4"
+    "ext-bcmath": "*",
+    "symfony/console": "^5.4"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "3.*",
+    "phpstan/phpstan": "^1.5",
+    "pestphp/pest": "^1.21"
   },
   "autoload": {
     "psr-4": {
       "App\\": "src/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
     }
   }
 }
